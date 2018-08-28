@@ -1,11 +1,4 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: Lukas Lepez
- * Date: 21/08/2018
- * Time: 14:54
- */
-
+<?php 
 class BddHuman
 {
     protected $_bdd;
@@ -15,7 +8,7 @@ class BddHuman
      */
     public function __construct()
     {
-        $this->_bdd = new PDO('mysql:host=localhost;dbname=human;charset=utf8', 'root', '');
+        $this->_bdd = new PDO('mysql:host=localhost;dbname=human;charset=utf8', 'admin', 'admin');
     }
 
     /**
@@ -38,6 +31,9 @@ class BddHuman
     {
 
     }
+    public function recupererStatsPartie(){
+
+    }
 }
 
-$test = new BddHuman();
+// $test = new BddHuman();

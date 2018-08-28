@@ -1,13 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Lukas Lepez
- * Date: 21/08/2018
- * Time: 11:39
- */
-
-include 'bddHuman.php';
-
+error_reporting(E_ALL);
+ini_set('display_errors',1);
+require 'partie.php';
 class Personnage extends BddHuman
 {
     protected $_espvie;
@@ -15,7 +9,7 @@ class Personnage extends BddHuman
     protected $_taille;
     protected $_homme;
     protected $_emplacement;
-
+    protected $_idPers;
     /**
      * Personnage constructor.
      * @param $emplacement
@@ -28,8 +22,10 @@ class Personnage extends BddHuman
         $this->_taille = mt_rand(420, 570)/10;
         $this->_homme = mt_rand(1, 100);
         $this->_emplacement = $emplacement;
-
-        var_dump($this->_croissance);
+        $this->_idPers = $this->_bdd->prepare("SELECT id_perso from personnage ORDER BY id_perso DESC LIMIT 1");
+        $this->_idPers->execute();
+        $rsltidPers = $this->_idPers->fetch();
+        $this->_idPers = $rsltidPers[0];
     }
 
     /**
@@ -113,9 +109,10 @@ class Personnage extends BddHuman
         $this->_emplacement = $emplacement;
     }
 
-    public function enregistrerPerso()
+    public function enregistrerPerso($idPart)
     {
-        $select = $this->_bdd->prepare("SELECT * FROM personnage WHERE espvie = ? AND croissance = ? AND taille = ? AND homme = ? AND emplacement = ?");
+
+        $select = $this->_bdd->prepare("SELECT id_perso FROM personnage WHERE lifespan = ? AND growth = ? AND birthsize = ? AND man = ? AND location = ?");
         $select->bindValue(1, $this->_espvie);
         $select->bindValue(2, $this->_croissance);
         $select->bindValue(3, $this->_taille);
@@ -123,29 +120,48 @@ class Personnage extends BddHuman
         $select->bindValue(5, $this->_emplacement);
         $select->execute();
         $result = $select->fetch();
-
-        if ($this->_espvie == $result[1] && $this->_croissance == $result[2] && $this->_taille == $result[3] && $this->_homme == $result[4] && $this->_emplacement == $result[5]) {
-
+        if ($result !== null) {
+            $existPerso = $this->_bdd->prepare("INSERT INTO partie_perso(id_perso,id_partie) VALUES (?,?)");
+            $select->bindValue(1, $result[0]);
+            $select->bindValue(2, $idPart);
+            $select->execute();
         } else {
             $this->setHomme();
-            $enregistre = $this->_bdd->prepare("INSERT INTO personnage(espvie, croissance, taille, homme, emplacement) VALUES (?, ?, ?, ?, ?)");
+            $enregistre = $this->_bdd->prepare("INSERT INTO personnage(lifespan, growth, birthsize, man, location) VALUES (?, ?, ?, ?, ?)");
             $enregistre->bindParam(1, $this->_espvie);
             $enregistre->bindParam(2, $this->_croissance);
             $enregistre->bindParam(3, $this->_taille);
             $enregistre->bindParam(4, $this->_homme);
             $enregistre->bindParam(5, $this->_emplacement);
-            $enregistre->execute();
+            return $enregistre->execute();
+            echo"ok";
         }
     }
 
-    public function enregistrerPartiePerso()
+    public function enregistrerPartiePerso($idPart)
     {
-        $enregistre = $this->_bdd->prepare("INSERT INTO partie_perso (id_perso, id_partie) SELECT * FROM (SELECT id_perso FROM personnage) r1, (SELECT id_partie FROM partie) r2");
+        $enregistre = $this->_bdd->prepare("INSERT INTO partie_perso(id_perso, id_partie) VALUES (?,?) ");
+        $enregistre->bindValue(1,$this->_idPers);
+        $enregistre->bindValue(2,$idPart);
         $enregistre->execute();
     }
 
 }
 
-$perso = new Personnage(1);
+// $perso = new Personnage();
+// $parts = new Partie();
+// $perso->enregistrerPerso($parts->getPartie());
+// $perso->enregistrerPartiePerso($parts->getPartie());
 
-$perso->enregistrerPerso();
+function createPerso($nbPerso){
+    $i=0;
+    $arr=[];
+    while($i<$nbPerso){
+        $perso = new Personnage($i);
+        array_push($arr, $perso); 
+        $i++;
+    }
+    return json_encode($arr);
+}
+
+echo createPerso(10);
