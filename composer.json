@@ -1,0 +1,13 @@
+{
+    "name": "lepez/humanproject",
+    "authors": [
+        {
+            "name": "BlaadFrost",
+            "email": "lepezlukas.pro@gmail.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^7"
+    }
+}
